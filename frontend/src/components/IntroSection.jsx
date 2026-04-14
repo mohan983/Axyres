@@ -11,22 +11,22 @@ export default function IntroSection() {
 
         <div className="intro-right">
             <h1 className="intro-sub" style={{color:'black', marginBottom:'5px'}}>
-                Build a resume that gets attention
+                Master Resume
             </h1>
             <p className="intro-sub" style={{marginBottom:'10px'}}>
-                Beat the competition — your resume should highlight your strengths and present your best self.
+                Start with the "Single Source of Truth." The visual emphasizes that the user only needs to build their profile once.
             </p>
             <h1 className="intro-sub" style={{color:'black', marginBottom:'5px'}}>
-                Get paid more
+                Chrome Extension
             </h1>
             <p className="intro-sub" style={{marginBottom:'10px'}}>
-                a strong resume moves you toward better job opportunities.
+                Instantly scraping job descriptions from any job portals is the primary hook for user acquisition.
             </p>
             <h1 className="intro-sub" style={{color:'black', marginBottom:'5px'}}>
-                ATS-friendly resumes
+                Precision AI & ATS Scoring
             </h1>
             <p className="intro-sub" style={{marginBottom:'10px'}}>
-                pass automatic screening systems used by top companies.
+                The focus here is on keywords, metrics, and tone, ensuring your resume passes automatic screening systems used by top companies.
             </p>
         </div>
     </section>

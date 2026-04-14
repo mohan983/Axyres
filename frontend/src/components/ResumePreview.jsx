@@ -1,4 +1,3 @@
-import React from 'react';
 import { useResume } from '../context/ResumeContext';
 import Template1 from '../templates/Template1';
 import Template2 from '../templates/Template2';

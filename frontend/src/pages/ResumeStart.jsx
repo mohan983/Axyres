@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useResume } from "../context/ResumeContext";
 import Navbar from "../components/Navbar";
 
+const BASE_URL = import.meta.env.VITE_REACT_APP_API_URL
 
 export default function ResumeStart() {
   const navigate = useNavigate();
@@ -21,20 +22,17 @@ export default function ResumeStart() {
     navigate("/details");
   };
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file type
-    const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
-    if (!validTypes.includes(file.type)) {
-      setUploadError("Please upload a PDF, DOC, DOCX, or TXT file.");
-      return;
-    }
+    const validTypes = [
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
 
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError("File size should be less than 5MB.");
+    if (!validTypes.includes(file.type)) {
+      setUploadError("Only PDF and DOCX files are supported");
       return;
     }
 
@@ -42,101 +40,40 @@ export default function ResumeStart() {
     setUploadError("");
     setUploadSuccess(false);
 
-    // Simulate AI processing with timeout
-    setTimeout(() => {
-      // In a real app, you would:
-      // 1. Upload the file to your backend
-      // 2. Process it with AI/ML algorithms (like spaCy, NLTK, or custom models)
-      // 3. Extract and structure the resume data
-      // 4. Return the structured data
+    try {
+      const formData = new FormData();
+      formData.append("resume", file);
 
-      // For now, we'll simulate extracted data
-      const mockExtractedData = {
-        personalInfo: {
-          firstName: "John",
-          lastName: "Doe",
-          jobTitle: "Software Engineer",
-          email: "john.doe@example.com",
-          phone: "(123) 456-7890",
-          location: "San Francisco, CA",
-          linkedin: "linkedin.com/in/johndoe",
-          github: "github.com/johndoe",
-          website: "johndoe.com",
-          summary: "Experienced software engineer with 5+ years in web development. Specialized in React, Node.js, and cloud technologies. Passionate about building scalable applications and solving complex problems."
-        },
-        education: [
-          {
-            id: Date.now(),
-            school: "Stanford University",
-            degree: "Bachelor of Science",
-            field: "Computer Science",
-            gpa: "3.8/4.0",
-            startDate: "2016",
-            endDate: "2020",
-            location: "Stanford, CA",
-            description: "Graduated with honors. Relevant coursework: Data Structures, Algorithms, Machine Learning, Web Development."
-          }
-        ],
-        experience: [
-          {
-            id: Date.now(),
-            company: "Tech Innovations Inc.",
-            role: "Senior Software Engineer",
-            location: "San Francisco, CA",
-            startDate: "2020",
-            endDate: "Present",
-            description: "Lead development of web applications using React and Node.js. Improved application performance by 40%.",
-            achievements: "• Led a team of 5 developers\n• Implemented CI/CD pipeline\n• Reduced page load time by 60%"
-          },
-          {
-            id: Date.now() + 1,
-            company: "Digital Solutions",
-            role: "Software Engineer",
-            location: "San Jose, CA",
-            startDate: "2018",
-            endDate: "2020",
-            description: "Developed and maintained web applications. Collaborated with cross-functional teams.",
-            achievements: "• Developed 10+ features\n• Improved code quality by 30%"
-          }
-        ],
-        skills: ["JavaScript", "React", "Node.js", "Python", "AWS", "Docker", "Git", "Agile Methodologies"],
-        projects: [
-          {
-            id: Date.now(),
-            title: "E-commerce Platform",
-            description: "Built a full-stack e-commerce platform with React and Node.js",
-            link: "https://github.com/johndoe/ecommerce",
-            technologies: "React, Node.js, MongoDB, Stripe API",
-            startDate: "2022",
-            endDate: "2023"
-          }
-        ],
-        certifications: [
-          {
-            id: Date.now(),
-            name: "AWS Certified Solutions Architect",
-            issuer: "Amazon Web Services",
-            date: "2022",
-            credentialId: "AWS-123456"
-          }
-        ],
-        languages: ["English (Native)", "Spanish (Fluent)"]
-      };
+      const res = await fetch(`${BASE_URL}/api/ai/parse-resume`, {
+        method: "POST",
+        body: formData,
+      });
 
-      // Set the template first
+      if (!res.ok) {
+        throw new Error("Resume parsing failed");
+      }
+
+      const parsedData = await res.json();
+
+      // Save template & parsed resume
       setTemplate(parseInt(templateId));
-      
-      // Store extracted data in localStorage for the Details page to use
-      localStorage.setItem('extractedResumeData', JSON.stringify(mockExtractedData));
-      
-      setUploading(false);
+      localStorage.setItem(
+        "extractedResumeData",
+        JSON.stringify(parsedData)
+      );
+
       setUploadSuccess(true);
-      
-      // Navigate to details page after 1.5 seconds to show success message
+
       setTimeout(() => {
         navigate("/details");
-      }, 1500);
-    }, 2000);
+      }, 1200);
+
+    } catch (err) {
+      console.error(err);
+      setUploadError("Failed to analyze resume. Try again.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const triggerFileUpload = () => {

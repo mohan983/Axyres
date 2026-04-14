@@ -1,112 +1,104 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ResumePreview from "../components/ResumePreview";
 import { useResume } from "../context/ResumeContext";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { useAuth } from "../context/AuthContext";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
+const BASE_URL = import.meta.env.VITE_REACT_APP_API_URL
 
 export default function Download() {
-  const { formData, template, setTemplate } = useResume();
+  const { formData, template, setTemplate, setFormData } = useResume();
   const navigate = useNavigate();
   const [downloading, setDownloading] = useState(false);
+  const { user } = useAuth();
 
-  const handleDownload = () => {
-    setDownloading(true);
-    
-    // Create a new window for printing
-    const printWindow = window.open('', '_blank');
-    
-    // Get the resume HTML
-    const resumeElement = document.querySelector('.resume-preview');
-    
-    if (resumeElement) {
-      // Create the print document
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Resume - ${formData.personalInfo?.firstName || ''} ${formData.personalInfo?.lastName || ''}</title>
-          <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Calibri&family=Arial&family=Georgia&family=Times+New+Roman&display=swap');
-            
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
-            
-            body {
-              font-family: 'Inter', sans-serif;
-              background: white !important;
-              color: black !important;
-              padding: 20px;
-              margin: 0;
-            }
-            
-            .print-resume {
-              max-width: 800px;
-              margin: 0 auto;
-              background: white;
-            }
-            
-            /* Print-specific styles */
-            @media print {
-              @page {
-                margin: 0.5in;
-                size: letter;
-              }
-              
-              body {
-                padding: 0;
-                background: white;
-              }
-              
-              .print-resume {
-                margin: 0;
-                max-width: 100%;
-              }
-              
-              /* Hide elements that shouldn't print */
-              .no-print {
-                display: none !important;
-              }
-              
-              /* Ensure backgrounds print */
-              * {
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="print-resume">
-            ${resumeElement.innerHTML}
-          </div>
-          <script>
-            // Auto print and close
-            window.onload = function() {
-              setTimeout(function() {
-                window.print();
-                setTimeout(function() {
-                  window.close();
-                }, 500);
-              }, 500);
-            }
-          </script>
-        </body>
-        </html>
-      `);
-      
-      printWindow.document.close();
-    } else {
-      alert('Unable to generate PDF. Please try again.');
+  // 🔥 Restore resume after refresh
+  useEffect(() => {
+    const saved = localStorage.getItem("resumeData");
+    if (saved) {
+      setFormData(JSON.parse(saved));
     }
-    
+  }, []);
+
+
+const handleDownload = async () => {
+  if (!user) {
+    navigate("/login", {
+      state: { from: "/download", action: "download" },
+    });
+    return;
+  }
+
+  setDownloading(true);
+
+  try {
+    const resumeElement = document.querySelector(".resume-preview");
+
+    if (!resumeElement) {
+      alert("Resume not found.");
+      setDownloading(false);
+      return;
+    }
+
+    const templateId = localStorage.getItem("selectedTemplate") || 1;
+
+    // Capture canvas
+    const canvas = await html2canvas(resumeElement, {
+      scale: 2,
+      useCORS: true,
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const imgWidth = 210; // A4 width in mm
+    const pageHeight = 297;
+
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    // First page
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    // Extra pages if needed
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    const pdfBlob = pdf.output("blob");
+
+    // Download file
+    pdf.save("resume.pdf");
+
+    // Save to backend
+    const formDataToSend = new FormData();
+    formDataToSend.append("resume", pdfBlob, "resume.pdf");
+    formDataToSend.append("templateId", templateId);
+    formDataToSend.append("resumeData", JSON.stringify(formData));
+
+    await fetch(`${BASE_URL}/api/resume/save-latest`, {
+      method: "POST",
+      body: formDataToSend,
+      credentials: "include",
+    });
+
+  } catch (err) {
+    console.error("Download error:", err);
+    alert("Failed to download resume.");
+  } finally {
     setDownloading(false);
-  };
+  }
+};
 
   const handleEdit = () => {
     navigate("/details");

@@ -27,7 +27,7 @@ export default function Signup() {
     setLoading(true)
     try {
       await signup(values)
-      navigate('/', { replace: true })
+      navigate('/login', { replace: true })
     } catch (err) {
       setError(err.message)
     } finally {

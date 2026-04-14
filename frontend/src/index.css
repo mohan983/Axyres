@@ -286,7 +286,7 @@ body {
 }
 
 .intro-sub{
-  font-size: 20px;
+  font-size: 19px;
   color: #303941;
   margin: 0px;
 }
@@ -524,10 +524,8 @@ body {
 }
 
 .option-features li:before {
-  content: "✓";
   position: absolute;
   left: 0;
-  color: #48bb78;
   font-weight: bold;
   font-size: 1.1rem;
 }

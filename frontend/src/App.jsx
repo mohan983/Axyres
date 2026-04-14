@@ -7,7 +7,7 @@ import Templates from './pages/Templates.jsx'
 import ResumeStart from './pages/ResumeStart.jsx'
 import Details from './pages/Details.jsx'
 import Download from './pages/Download.jsx'
-// import ProtectedRoute from './components/ProtectedRoute.jsx'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 export default function App() {
   return (
@@ -17,7 +17,7 @@ export default function App() {
       <Route path='/templates' element={<Templates/>}/>
       <Route path="/resume-start" element={<ResumeStart />} />
       <Route path='/details' element={<Details/>}/>
-      <Route path='/download' element={<Download/>}/>
+      <Route path='/download' element={ <Download/> }/>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="*" element={<div className="container"><h1>404</h1><p>Page not found.</p></div>} />

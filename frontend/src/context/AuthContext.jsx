@@ -1,60 +1,77 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext(null);
-
-const USERS_KEY = "app.users";
-const SESSION_KEY = "app.session";
+const BASE_URL = import.meta.env.VITE_REACT_APP_API_URL
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const raw = localStorage.getItem(SESSION_KEY);
-    return raw ? JSON.parse(raw) : null;
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // 🔐 Check session on app load (cookie → backend)
+  useEffect(() => {
+    fetch(`${BASE_URL}/api/users/me`, {
+      credentials: "include",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Not authenticated");
+        return res.json();
+      })
+      .then((data) => {
+        setUser(data.user);
+      })
+      .catch(() => {
+        setUser(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  // ✅ Signup (backend)
+const signup = async ({ email, password }) => {
+  const res = await fetch(`${BASE_URL}/api/users/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include", // 🔥 REQUIRED
+    body: JSON.stringify({ email, password }),
   });
 
-  const signup = async ({ email, password }) => {
-    const users = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Signup failed");
 
-    if (users.find((u) => u.email === email)) {
-      throw new Error("Email already registered");
-    }
+  setUser(data.user); // 🔥 REQUIRED
+  return data;
+};
 
-    const newUser = {
-      id: Date.now(),
-      email,
-      password: btoa(password),
-    };
 
-    const next = [...users, newUser];
-    localStorage.setItem(USERS_KEY, JSON.stringify(next));
-
-    const session = { id: newUser.id, email };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-
-    setUser(session);
-  };
-
+  // ✅ Login (cookie is set by backend)
   const login = async ({ email, password }) => {
-    const users = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
+    const res = await fetch(`${BASE_URL}/api/users/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email, password }),
+    });
 
-    const found = users.find(
-      (u) => u.email === email && u.password === btoa(password)
-    );
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Login failed");
 
-    if (!found) throw new Error("Invalid credentials");
-
-    const session = { id: found.id, email: found.email };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-
-    setUser(session);
+    setUser(data.user);
+    return data;
   };
 
-  const logout = () => {
-    localStorage.removeItem(SESSION_KEY);
+  // 🚪 Logout (clear cookie)
+  const logout = async () => {
+    await fetch(`${BASE_URL}/api/users/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, signup, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, signup, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -63,3 +80,4 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
+
