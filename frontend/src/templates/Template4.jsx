@@ -43,7 +43,7 @@ export default function Template4({ data = {} }) {
         <aside className="sidebar">
           {data.personalInfo?.summary && (
             <section className="section">
-              <h2 className="section-title">Profile</h2>
+              <h2 className="section-title">Summary</h2>
               <p className="summary-text">{data.personalInfo.summary}</p>
             </section>
           )}
@@ -113,7 +113,7 @@ export default function Template4({ data = {} }) {
         <main className="main-content">
           {hasExperience && (
             <section className="section">
-              <h2 className="section-title">Professional Experience</h2>
+              <h2 className="section-title">Experience</h2>
               {data.experience.map((exp, i) => (
                 <div key={i} className="experience-item">
                   <div className="exp-header">
@@ -136,7 +136,7 @@ export default function Template4({ data = {} }) {
 
           {hasProjects && (
             <section className="section">
-              <h2 className="section-title">Key Projects</h2>
+              <h2 className="section-title">Projects</h2>
               {data.projects.map((project, i) => (
                 <div key={i} className="project-item">
                   <div className="project-header">

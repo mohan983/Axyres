@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'; // Add useEffect import
 import { useNavigate } from 'react-router-dom';
 import { useResume } from '../context/ResumeContext';
+import TemplateCard from "../components/TemplateCard"
+import { templates } from "../data/sample"
 import ResumePreview from '../components/ResumePreview';
 import Navbar from '../components/Navbar';
 
@@ -13,10 +15,12 @@ export default function Details() {
     removeArrayItem,
     addArrayItem,
     updateFormData,
-    setFormData // You need this function in your context
+    setFormData,
+    setTemplate // You need this function in your context
   } = useResume();
   
   const [activeSection, setActiveSection] = useState('personal');
+  const [activePage, setActivePage] = useState('form'); // 'form' or 'template'
 
   useEffect(() => {
     const extractedData = localStorage.getItem('extractedResumeData');
@@ -48,13 +52,14 @@ export default function Details() {
   }, [updatePersonalInfo, updateFormData]);
 
   const sections = [
-    { id: 'personal', label: 'Personal Info', icon: '👤' },
-    { id: 'education', label: 'Education', icon: '🎓' },
-    { id: 'experience', label: 'Experience', icon: '💼' },
-    { id: 'skills', label: 'Skills', icon: '⚡' },
-    { id: 'projects', label: 'Projects', icon: '📁' },
-    { id: 'certifications', label: 'Certifications', icon: '📜' },
-    { id: 'languages', label: 'Languages', icon: '🌐' }
+    { id: 'personal', label: 'Personal Info'},
+    { id: 'education', label: 'Education'},
+    { id: 'experience', label: 'Experience'},
+    { id: 'skills', label: 'Skills'},
+    { id: 'projects', label: 'Projects'},
+    { id: 'certifications', label: 'Certifications'},
+    { id: 'achievements', label: 'Achievements'},
+    { id: 'languages', label: 'Languages'}
   ];
 
   const handleSubmit = (e) => {
@@ -62,8 +67,12 @@ export default function Details() {
     navigate('/download');
   };
 
+  const handleChangeTemplate = () => {
+    setActivePage('template');
+  };
+
   const handleBack = () => {
-    navigate('/templates');
+    activePage === 'template' ? setActivePage('form') : navigate('/resume-start');
   };
 
   // Remove entire sections
@@ -877,14 +886,17 @@ export default function Details() {
         <div className="details-container">
           <div className="form-section">
             <header className="form-header">
-              <button className="back-btn" onClick={handleBack}>
-                ← Back to Templates
-              </button>
-              <h1>Fill Your Details</h1>
-              <p className="form-subtitle">Complete all sections to generate your resume</p>
+              <div className="header-actions">
+                <button className="back-btn" onClick={handleBack}>
+                ← Back
+                </button>
+                <button className='btn-secondary' onClick={handleChangeTemplate}>Change Template</button>
+              </div>
             </header>
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} style={{ display: activePage === 'form' ? 'block' : 'none' }}>
+              <h1 style={{ marginTop: '10px', marginBottom: '10px' }}>Fill Your Details</h1>
+              <p className="form-subtitle">Complete all sections to generate your resume</p>
               <div className="form-navigation">
                 {sections.map(section => (
                   <button
@@ -893,8 +905,7 @@ export default function Details() {
                     className={`nav-btn ${activeSection === section.id ? 'active' : ''}`}
                     onClick={() => setActiveSection(section.id)}
                   >
-                    <span className="nav-icon">{section.icon}</span>
-                    <span className="nav-label">{section.label}</span>
+                    {section.label}
                     {/* {hasSectionData(section.id) && <span className="nav-indicator">✓</span>} */}
                   </button>
                 ))}
@@ -924,6 +935,20 @@ export default function Details() {
                 </div>
               </div>
             </form>
+            <div style={{ display: activePage === 'template' ? 'block' : 'none', textAlign: 'center' }}>
+              <div className="templates-grid">
+                {templates.map(t => (
+                  <TemplateCard
+                    key={t.id}
+                    image={t.image}
+                    name={t.name}
+                    onClick={() => {
+                      setTemplate(t.id)
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="preview-section">
@@ -934,15 +959,6 @@ export default function Details() {
                 <button className="preview-zoom-btn" title="Zoom Out">-</button>
                 <button className="preview-reset-btn" title="Reset View">↻</button>
               </div> */}
-            </div>
-            <div className="preview-tips">
-              <h3>💡 Tips for ATS Optimization</h3>
-              <ul>
-                <li>Use standard section headings</li>
-                <li>Include relevant keywords</li>
-                <li>Avoid tables and images</li>
-                <li>Save as PDF for submission</li>
-              </ul>
             </div>
           </div>
         </div>

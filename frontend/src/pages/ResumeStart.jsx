@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useResume } from "../context/ResumeContext";
 import Navbar from "../components/Navbar";
+import { Upload } from "lucide-react";
 
 const BASE_URL = import.meta.env.VITE_REACT_APP_API_URL
 
@@ -110,8 +111,7 @@ export default function ResumeStart() {
           <div className="options-grid">
             {/* Option 1: Build from Scratch */}
             <div className="option-card build-from-scratch">
-              <div className="option-icon">🛠️</div>
-              <div className="option-content">
+              <div className="option-content" style={{ marginBottom: 0 }}>
                 <h2>Build from Scratch</h2>
                 <p className="option-description">
                   Start with a blank template and fill in your details manually. 
@@ -126,7 +126,7 @@ export default function ResumeStart() {
               </div>
               <div className="option-actions">
                 <button 
-                  className="option-btn primary"
+                  className="spl_btn"
                   onClick={handleBuildFromScratch}
                 >
                   Start Building
@@ -140,7 +140,6 @@ export default function ResumeStart() {
               onDragOver={handleDragOver}
               onDrop={handleDrop}
             >
-              <div className="option-icon">📄</div>
               <div className="option-content">
                 <h2>Upload Existing Resume</h2>
                 <p className="option-description">
@@ -161,11 +160,11 @@ export default function ResumeStart() {
                   {!uploading && !uploadSuccess && (
                     <>
                       <div className="upload-prompt">
-                        <div className="upload-icon">📤</div>
-                        <h3>Drag & Drop or Click to Upload</h3>
+                        <div className="upload-icon"><Upload size={20} /></div>
+                        <h3>Click to Upload Your Resume</h3>
                         <p className="upload-hint">Supported formats: PDF, DOC, DOCX, TXT (Max 5MB)</p>
                         <button 
-                          className="upload-btn"
+                          className="spl_btn"
                           onClick={triggerFileUpload}
                         >
                           Choose File

@@ -34,8 +34,8 @@ export const faqs=[
 ]
 
 export const templates = [
-  { id: 1, name: "Modern ATS", image: "/templates/t1.png" },
+  { id: 1, name: "Professional ATS", image: "/templates/t1.png" },
   { id: 2, name: "Classic ATS", image: "/templates/t2.png" },
-  { id: 3, name: "Minimal ATS", image: "/templates/t3.png" },
-  { id: 4, name: "Professional ATS", image: "/templates/t4.png" },
+  { id: 3, name: "Timeline ATS", image: "/templates/t3.png" },
+  { id: 4, name: "Creative ATS", image: "/templates/t4.png" },
 ]

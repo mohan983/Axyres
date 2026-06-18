@@ -50,7 +50,7 @@ export default function Signup() {
             </div>
             {error && <p style={{color:'tomato', marginTop:10}}>{error}</p>}
             <div style={{height:12}} />
-            <button className="btn primary" disabled={loading}>{loading ? 'Creating...' : 'Sign Up'}</button>
+            <button className="spl_btn" disabled={loading}>{loading ? 'Creating...' : 'Sign Up'}</button>
           </form>
           <p className="muted" style={{marginTop:12}}>Already have an account? <Link to="/login">Login</Link></p>
         </div>
